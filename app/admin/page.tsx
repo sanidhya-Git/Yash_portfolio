@@ -133,8 +133,6 @@ export default function AdminDashboard() {
 
 
 
-    return () => clearInterval(interval)
-  }, [])
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
