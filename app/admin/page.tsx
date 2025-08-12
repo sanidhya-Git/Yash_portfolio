@@ -131,24 +131,7 @@ export default function AdminDashboard() {
     fetchData()
   }, [])
 
-  // Real-time updates for design stats
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      try {
-        const response = await fetch("/api/designs/stats")
-        if (response.ok) {
-          const stats: Array<{ _id: string; likes: number; views: number }> = await response.json()
-          setDesigns((prevDesigns) =>
-            prevDesigns.map((design) => {
-              const updatedStats = stats.find((stat) => stat._id === design._id)
-              return updatedStats ? { ...design, likes: updatedStats.likes, views: updatedStats.views } : design
-            }),
-          )
-        }
-      } catch (error) {
-        console.error("Error fetching real-time stats:", error)
-      }
-    }, 5000) // Update every 5 seconds in admin
+
 
     return () => clearInterval(interval)
   }, [])
