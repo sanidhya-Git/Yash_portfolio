@@ -1,25 +1,17 @@
 "use client"
 
 import type React from "react"
-
+import { useState, useEffect, useRef } from "react"
 import { motion } from "framer-motion"
-import { Calendar, Plus, Trash2, Edit, Eye, Heart, TrendingUp, ArrowLeft, Upload, X } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { useState, useEffect, useRef } from "react"
+import { Calendar, Plus, Trash2, Edit, Eye, Heart, TrendingUp, ArrowLeft, Upload, X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -131,9 +123,6 @@ export default function AdminDashboard() {
     fetchData()
   }, [])
 
-
-
-
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
@@ -167,7 +156,6 @@ export default function AdminDashboard() {
 
   const uploadImage = async (file: File): Promise<string> => {
     setUploadingImage(true)
-
     try {
       const formData = new FormData()
       formData.append("image", file)
@@ -177,9 +165,7 @@ export default function AdminDashboard() {
         body: formData,
       })
 
-      if (!response.ok) {
-        throw new Error("Failed to upload image")
-      }
+      if (!response.ok) throw new Error("Failed to upload image")
 
       const data = await response.json()
       return data.imageUrl
@@ -200,7 +186,7 @@ export default function AdminDashboard() {
     if (selectedImage) {
       try {
         imageUrl = await uploadImage(selectedImage)
-      } catch (error) {
+      } catch {
         toast({
           title: "Upload Error",
           description: "Failed to upload image. Please try again.",
@@ -221,36 +207,22 @@ export default function AdminDashboard() {
     try {
       const response = await fetch("/api/designs", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(designData),
       })
 
       if (response.ok) {
         const newDesign = await response.json()
-        const newDesignWithStats: Design = {
-          ...designData,
-          _id: newDesign.id,
-          likes: 0,
-          views: 0,
-        }
+        const newDesignWithStats: Design = { ...designData, _id: newDesign.id, likes: 0, views: 0 }
         setDesigns([...designs, newDesignWithStats])
         setIsAddingDesign(false)
         setSelectedImage(null)
         setImagePreview("")
-        toast({
-          title: "Design Added",
-          description: "New design has been added to your portfolio.",
-        })
+        toast({ title: "Design Added", description: "New design has been added to your portfolio." })
         e.currentTarget.reset()
       }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to add design. Please try again.",
-        variant: "destructive",
-      })
+    } catch {
+      toast({ title: "Error", description: "Failed to add design. Please try again.", variant: "destructive" })
     }
   }
 
@@ -259,18 +231,13 @@ export default function AdminDashboard() {
     if (!editingDesign) return
 
     const formData = new FormData(e.currentTarget)
-
     let imageUrl = editingDesign.image
 
     if (selectedImage) {
       try {
         imageUrl = await uploadImage(selectedImage)
-      } catch (error) {
-        toast({
-          title: "Upload Error",
-          description: "Failed to upload image. Please try again.",
-          variant: "destructive",
-        })
+      } catch {
+        toast({ title: "Upload Error", description: "Failed to upload image. Please try again.", variant: "destructive" })
         return
       }
     }
@@ -286,9 +253,7 @@ export default function AdminDashboard() {
     try {
       const response = await fetch(`/api/designs/${editingDesign._id}`, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(designData),
       })
 
@@ -297,39 +262,22 @@ export default function AdminDashboard() {
         setEditingDesign(null)
         setSelectedImage(null)
         setImagePreview("")
-        toast({
-          title: "Design Updated",
-          description: "Design has been updated successfully.",
-        })
+        toast({ title: "Design Updated", description: "Design has been updated successfully." })
       }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update design. Please try again.",
-        variant: "destructive",
-      })
+    } catch {
+      toast({ title: "Error", description: "Failed to update design. Please try again.", variant: "destructive" })
     }
   }
 
   const handleDeleteDesign = async (id: string) => {
     try {
-      const response = await fetch(`/api/designs?id=${id}`, {
-        method: "DELETE",
-      })
-
+      const response = await fetch(`/api/designs?id=${id}`, { method: "DELETE" })
       if (response.ok) {
         setDesigns(designs.filter((design) => design._id !== id))
-        toast({
-          title: "Design Deleted",
-          description: "Design has been removed from your portfolio.",
-        })
+        toast({ title: "Design Deleted", description: "Design has been removed from your portfolio." })
       }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete design. Please try again.",
-        variant: "destructive",
-      })
+    } catch {
+      toast({ title: "Error", description: "Failed to delete design. Please try again.", variant: "destructive" })
     }
   }
 
@@ -337,61 +285,29 @@ export default function AdminDashboard() {
     try {
       const response = await fetch(`/api/bookings/${id}`, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
       })
-
       if (response.ok) {
-        setBookings(bookings.map((booking) => (booking._id === id ? { ...booking, status } : booking)))
-        toast({
-          title: "Booking Updated",
-          description: `Booking status changed to ${status}.`,
-        })
+        setBookings(bookings.map((b) => (b._id === id ? { ...b, status } : b)))
+        toast({ title: "Booking Updated", description: `Booking status changed to ${status}.` })
       }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update booking status.",
-        variant: "destructive",
-      })
+    } catch {
+      toast({ title: "Error", description: "Failed to update booking status.", variant: "destructive" })
     }
   }
 
   const resetImageSelection = () => {
     setSelectedImage(null)
     setImagePreview("")
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ""
-    }
+    if (fileInputRef.current) fileInputRef.current.value = ""
   }
 
   const stats: StatItem[] = [
-    {
-      title: "Total Bookings",
-      value: bookings.length,
-      icon: Calendar,
-      color: "text-blue-600",
-    },
-    {
-      title: "Published Designs",
-      value: designs.filter((d) => d.status === "published").length,
-      icon: Eye,
-      color: "text-green-600",
-    },
-    {
-      title: "Total Views",
-      value: designs.reduce((sum, d) => sum + (d.views || 0), 0).toLocaleString(),
-      icon: TrendingUp,
-      color: "text-purple-600",
-    },
-    {
-      title: "Total Likes",
-      value: designs.reduce((sum, d) => sum + (d.likes || 0), 0),
-      icon: Heart,
-      color: "text-red-600",
-    },
+    { title: "Total Bookings", value: bookings.length, icon: Calendar, color: "text-blue-600" },
+    { title: "Published Designs", value: designs.filter((d) => d.status === "published").length, icon: Eye, color: "text-green-600" },
+    { title: "Total Views", value: designs.reduce((sum, d) => sum + (d.views || 0), 0).toLocaleString(), icon: TrendingUp, color: "text-purple-600" },
+    { title: "Total Likes", value: designs.reduce((sum, d) => sum + (d.likes || 0), 0), icon: Heart, color: "text-red-600" },
   ]
 
   const DesignForm: React.FC<DesignFormProps> = ({ design = null, onSubmit, isEditing = false }) => (
@@ -404,9 +320,7 @@ export default function AdminDashboard() {
       <div className="space-y-2">
         <Label htmlFor="category">Category</Label>
         <Select name="category" defaultValue={design?.category || ""} required>
-          <SelectTrigger>
-            <SelectValue placeholder="Select category" />
-          </SelectTrigger>
+          <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="Web Design">Web Design</SelectItem>
             <SelectItem value="Mobile Design">Mobile Design</SelectItem>
@@ -418,13 +332,7 @@ export default function AdminDashboard() {
 
       <div className="space-y-2">
         <Label htmlFor="description">Description</Label>
-        <Textarea
-          id="description"
-          name="description"
-          placeholder="Brief description of the design project..."
-          defaultValue={design?.description || ""}
-          rows={3}
-        />
+        <Textarea id="description" name="description" placeholder="Brief description..." defaultValue={design?.description || ""} rows={3} />
       </div>
 
       <div className="space-y-2">
@@ -432,21 +340,9 @@ export default function AdminDashboard() {
         <div className="space-y-4">
           {(imagePreview || design?.image) && (
             <div className="relative">
-              <Image
-                src={imagePreview || design?.image || "/placeholder.svg"}
-                alt="Design preview"
-                width={300}
-                height={200}
-                className="rounded-lg object-cover border"
-              />
+              <Image src={imagePreview || design?.image || "/placeholder.svg"} alt="Design preview" width={300} height={200} className="rounded-lg object-cover border" />
               {imagePreview && (
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="sm"
-                  className="absolute top-2 right-2"
-                  onClick={resetImageSelection}
-                >
+                <Button type="button" variant="destructive" size="sm" className="absolute top-2 right-2" onClick={resetImageSelection}>
                   <X className="h-4 w-4" />
                 </Button>
               )}
@@ -455,20 +351,11 @@ export default function AdminDashboard() {
 
           <div className="flex items-center gap-4">
             <Input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageSelect} className="hidden" />
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploadingImage}
-            >
+            <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={uploadingImage}>
               <Upload className="mr-2 h-4 w-4" />
               {imagePreview ? "Change Image" : "Upload Image"}
             </Button>
-            {selectedImage && (
-              <span className="text-sm text-muted-foreground">
-                {selectedImage.name} ({(selectedImage.size / 1024 / 1024).toFixed(2)} MB)
-              </span>
-            )}
+            {selectedImage && <span className="text-sm text-muted-foreground">{selectedImage.name} ({(selectedImage.size / 1024 / 1024).toFixed(2)} MB)</span>}
           </div>
           <p className="text-xs text-muted-foreground">Supported formats: JPG, PNG, GIF, WebP. Max size: 5MB</p>
         </div>
@@ -477,9 +364,7 @@ export default function AdminDashboard() {
       <div className="space-y-2">
         <Label htmlFor="status">Status</Label>
         <Select name="status" defaultValue={design?.status || "draft"} required>
-          <SelectTrigger>
-            <SelectValue placeholder="Select status" />
-          </SelectTrigger>
+          <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="published">Published</SelectItem>
             <SelectItem value="draft">Draft</SelectItem>
@@ -502,9 +387,7 @@ export default function AdminDashboard() {
             <div className="animate-pulse space-y-8">
               <div className="h-8 bg-muted rounded w-1/3"></div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {[...Array(4)].map((_, i) => (
-                  <div key={i} className="h-24 bg-muted rounded"></div>
-                ))}
+                {[...Array(4)].map((_, i) => <div key={i} className="h-24 bg-muted rounded"></div>)}
               </div>
               <div className="h-96 bg-muted rounded"></div>
             </div>
@@ -518,7 +401,6 @@ export default function AdminDashboard() {
   return (
     <div>
       <Header />
-
       <div className="min-h-screen bg-muted/30 p-6 pt-28">
         <div className="max-w-7xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
@@ -529,43 +411,26 @@ export default function AdminDashboard() {
 
             <div className="mb-8">
               <h1 className="text-4xl font-bold mb-2">Admin Dashboard</h1>
-              <p className="text-muted-foreground">
-                Manage your bookings and portfolio designs with real-time analytics
-              </p>
+              <p className="text-muted-foreground">Manage your bookings and portfolio designs with real-time analytics</p>
             </div>
 
-            {/* Real-time Stats */}
             <div className="mb-8">
               <h2 className="text-2xl font-semibold mb-4">Real-time Analytics</h2>
               <RealTimeStats />
             </div>
 
-            {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               {stats.map((stat, index) => (
-                <motion.div
-                  key={stat.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                >
+                <motion.div key={stat.title} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: index * 0.1 }}>
                   <Card>
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
-                          <motion.p
-                            key={stat.value}
-                            initial={{ scale: 1.1 }}
-                            animate={{ scale: 1 }}
-                            transition={{ duration: 0.3 }}
-                            className="text-2xl font-bold"
-                          >
-                            {stat.value}
-                          </motion.p>
-                        </div>
-                        <stat.icon className={`h-8 w-8 ${stat.color}`} />
+                    <CardContent className="p-6 flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
+                        <motion.p key={stat.value} initial={{ scale: 1.1 }} animate={{ scale: 1 }} transition={{ duration: 0.3 }} className="text-2xl font-bold">
+                          {stat.value}
+                        </motion.p>
                       </div>
+                      <stat.icon className={`h-8 w-8 ${stat.color}`} />
                     </CardContent>
                   </Card>
                 </motion.div>
@@ -573,205 +438,103 @@ export default function AdminDashboard() {
             </div>
 
             {/* Bookings Section */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="mb-8"
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5" />
-                    Recent Bookings
-                  </CardTitle>
-                  <CardDescription>Manage your upcoming meetings and consultations</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Client</TableHead>
-                        <TableHead>Service</TableHead>
-                        <TableHead>Date & Time</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Actions</TableHead>
+            <Card className="mb-8">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Calendar className="h-5 w-5" />Recent Bookings</CardTitle>
+                <CardDescription>Manage your upcoming meetings and consultations</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Service</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Time</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {bookings.map((booking) => (
+                      <TableRow key={booking._id}>
+                        <TableCell>{booking.name}</TableCell>
+                        <TableCell>{booking.email}</TableCell>
+                        <TableCell>{booking.service}</TableCell>
+                        <TableCell>{booking.date}</TableCell>
+                        <TableCell>{booking.time}</TableCell>
+                       <TableCell>
+  <Badge variant={booking.status === "confirmed" ? "secondary" : "destructive"}>
+    {booking.status}
+  </Badge>
+</TableCell>
+
+                        <TableCell className="flex items-center gap-2">
+                          {booking.status !== "confirmed" && <Button size="sm" onClick={() => handleUpdateBookingStatus(booking._id, "confirmed")}>Confirm</Button>}
+                          {booking.status !== "cancelled" && <Button size="sm" variant="destructive" onClick={() => handleUpdateBookingStatus(booking._id, "cancelled")}>Cancel</Button>}
+                        </TableCell>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {bookings.map((booking) => (
-                        <TableRow key={booking._id}>
-                          <TableCell>
-                            <div>
-                              <div className="font-medium">{booking.name}</div>
-                              <div className="text-sm text-muted-foreground">{booking.email}</div>
-                            </div>
-                          </TableCell>
-                          <TableCell>{booking.service}</TableCell>
-                          <TableCell>
-                            {booking.date} at {booking.time}
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={booking.status === "confirmed" ? "default" : "secondary"}>
-                              {booking.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex gap-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleUpdateBookingStatus(booking._id, "confirmed")}
-                              >
-                                Confirm
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleUpdateBookingStatus(booking._id, "cancelled")}
-                              >
-                                Cancel
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            </motion.div>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
 
             {/* Designs Section */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-            >
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle>Portfolio Designs</CardTitle>
-                      <CardDescription>Manage your design portfolio with real-time engagement metrics</CardDescription>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-semibold">Portfolio Designs</h2>
+              <Button onClick={() => setIsAddingDesign(true)}><Plus className="mr-2 h-4 w-4" />Add Design</Button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {designs.map((design) => (
+                <Card key={design._id}>
+                  <CardHeader>
+                    <CardTitle>{design.title}</CardTitle>
+                    <CardDescription>{design.category}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <Image src={design.image} alt={design.title} width={400} height={250} className="object-cover w-full h-60 rounded-t-lg" />
+                  </CardContent>
+                  <CardContent className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <Heart className="h-4 w-4 text-red-600" /> {design.likes}
+                      <TrendingUp className="h-4 w-4 text-purple-600" /> {design.views}
                     </div>
-                    <Dialog
-                      open={isAddingDesign}
-                      onOpenChange={(open) => {
-                        setIsAddingDesign(open)
-                        if (!open) resetImageSelection()
-                      }}
-                    >
-                      <DialogTrigger asChild>
-                        <Button>
-                          <Plus className="mr-2 h-4 w-4" />
-                          Add Design
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                        <DialogHeader>
-                          <DialogTitle>Add New Design</DialogTitle>
-                          <DialogDescription>Add a new design to your portfolio with image upload</DialogDescription>
-                        </DialogHeader>
-                        <DesignForm onSubmit={handleAddDesign} />
-                      </DialogContent>
-                    </Dialog>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {designs.map((design) => (
-                      <Card key={design._id} className="overflow-hidden">
-                        <div className="relative">
-                          <Image
-                            src={design.image || "/placeholder.svg"}
-                            alt={design.title}
-                            width={400}
-                            height={300}
-                            className="w-full h-48 object-cover"
-                          />
-                          <Badge
-                            className="absolute top-2 right-2"
-                            variant={design.status === "published" ? "default" : "secondary"}
-                          >
-                            {design.status}
-                          </Badge>
-                        </div>
-                        <CardContent className="p-4">
-                          <h3 className="font-semibold mb-1">{design.title}</h3>
-                          <p className="text-sm text-muted-foreground mb-2">{design.category}</p>
-                          {design.description && (
-                            <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{design.description}</p>
-                          )}
-                          <div className="flex items-center justify-between text-sm text-muted-foreground mb-3">
-                            <motion.div
-                              key={`likes-${design.likes}`}
-                              initial={{ scale: 1.1 }}
-                              animate={{ scale: 1 }}
-                              transition={{ duration: 0.3 }}
-                              className="flex items-center gap-1"
-                            >
-                              <Heart className="h-4 w-4 text-red-500" />
-                              <span className="font-medium">{design.likes || 0}</span>
-                            </motion.div>
-                            <motion.div
-                              key={`views-${design.views}`}
-                              initial={{ scale: 1.1 }}
-                              animate={{ scale: 1 }}
-                              transition={{ duration: 0.3 }}
-                              className="flex items-center gap-1"
-                            >
-                              <Eye className="h-4 w-4" />
-                              <span className="font-medium">{design.views || 0}</span>
-                            </motion.div>
-                          </div>
-                          <div className="flex gap-2">
-                            <Dialog
-                              open={editingDesign?._id === design._id}
-                              onOpenChange={(open) => {
-                                if (open) {
-                                  setEditingDesign(design)
-                                } else {
-                                  setEditingDesign(null)
-                                  resetImageSelection()
-                                }
-                              }}
-                            >
-                              <DialogTrigger asChild>
-                                <Button size="sm" variant="outline" className="flex-1 bg-transparent">
-                                  <Edit className="mr-1 h-3 w-3" />
-                                  Edit
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                                <DialogHeader>
-                                  <DialogTitle>Edit Design</DialogTitle>
-                                  <DialogDescription>Update your design information and image</DialogDescription>
-                                </DialogHeader>
-                                <DesignForm design={editingDesign} onSubmit={handleEditDesign} isEditing />
-                              </DialogContent>
-                            </Dialog>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="flex-1 bg-transparent"
-                              onClick={() => handleDeleteDesign(design._id)}
-                            >
-                              <Trash2 className="mr-1 h-3 w-3" />
-                              Delete
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
+                    <div className="flex items-center gap-2">
+                      <Button size="sm" variant="outline" onClick={() => setEditingDesign(design)}><Edit className="h-4 w-4" /></Button>
+                      <Button size="sm" variant="destructive" onClick={() => handleDeleteDesign(design._id)}><Trash2 className="h-4 w-4" /></Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Add Design Dialog */}
+            <Dialog open={isAddingDesign} onOpenChange={setIsAddingDesign}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add New Design</DialogTitle>
+                  <DialogDescription>Fill out the form below to add a new design to your portfolio.</DialogDescription>
+                </DialogHeader>
+                <DesignForm onSubmit={handleAddDesign} />
+              </DialogContent>
+            </Dialog>
+
+            {/* Edit Design Dialog */}
+            <Dialog open={!!editingDesign} onOpenChange={() => setEditingDesign(null)}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Edit Design</DialogTitle>
+                  <DialogDescription>Update the details of your design below.</DialogDescription>
+                </DialogHeader>
+                {editingDesign && <DesignForm design={editingDesign} onSubmit={handleEditDesign} isEditing />}
+              </DialogContent>
+            </Dialog>
           </motion.div>
         </div>
       </div>
-
       <Footer />
     </div>
   )

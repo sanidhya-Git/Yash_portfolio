@@ -1,55 +1,38 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { writeFile, mkdir } from "fs/promises"
-import { join } from "path"
-import { existsSync } from "fs"
+import { NextResponse } from "next/server";
+import { Storage } from "@google-cloud/storage";
 
-export async function POST(request: NextRequest) {
-  try {
-    const formData = await request.formData()
-    const file = formData.get("image") as File
+const storage = new Storage({
+  projectId: process.env.GCP_PROJECT_ID,
+  credentials: {
+    client_email: process.env.GCP_CLIENT_EMAIL!,
+    private_key: process.env.GCP_PRIVATE_KEY!.replace(/\\n/g, "\n"),
+  },
+});
 
-    if (!file) {
-      return NextResponse.json({ error: "No file uploaded" }, { status: 400 })
-    }
+const bucketName = process.env.GCP_BUCKET_NAME!;
 
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
-      return NextResponse.json({ error: "File must be an image" }, { status: 400 })
-    }
+export async function POST(req: Request) {
+  const formData = await req.formData();
+  const file = formData.get("image") as File;
 
-    // Validate file size (5MB limit)
-    if (file.size > 5 * 1024 * 1024) {
-      return NextResponse.json({ error: "File size must be less than 5MB" }, { status: 400 })
-    }
+  if (!file) return NextResponse.json({ error: "No file provided" }, { status: 400 });
 
-    // Create unique filename
-    const timestamp = Date.now()
-    const originalName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_")
-    const filename = `${timestamp}_${originalName}`
+  const bucket = storage.bucket(bucketName);
+  const blob = bucket.file(`${Date.now()}_${file.name}`);
+  const blobStream = blob.createWriteStream({
+    resumable: false,
+    contentType: file.type,
+    predefinedAcl: "publicRead", // makes it publicly accessible
+  });
 
-    // Ensure uploads directory exists
-    const uploadsDir = join(process.cwd(), "public", "uploads")
-    if (!existsSync(uploadsDir)) {
-      await mkdir(uploadsDir, { recursive: true })
-    }
+  const arrayBuffer = await file.arrayBuffer();
+  blobStream.end(Buffer.from(arrayBuffer));
 
-    // Convert file to buffer and save
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    const filepath = join(uploadsDir, filename)
-
-    await writeFile(filepath, buffer)
-
-    // Return the public URL
-    const imageUrl = `/uploads/${filename}`
-
-    return NextResponse.json({
-      success: true,
-      imageUrl,
-      filename,
-    })
-  } catch (error) {
-    console.error("Error uploading image:", error)
-    return NextResponse.json({ error: "Failed to upload image" }, { status: 500 })
-  }
+  return new Promise((resolve, reject) => {
+    blobStream.on("finish", () => {
+      const publicUrl = `https://storage.googleapis.com/${bucketName}/${blob.name}`;
+      resolve(NextResponse.json({ imageUrl: publicUrl }));
+    });
+    blobStream.on("error", (err) => reject(err));
+  });
 }

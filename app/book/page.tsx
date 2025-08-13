@@ -315,11 +315,11 @@ export default function BookingPage() {
                       <CardContent className="space-y-3">
                         <div className="flex items-center gap-3">
                           <Mail className="h-4 w-4 text-muted-foreground" />
-                          <span>alex@designstudio.com</span>
+                          <span>Yashbansal@gmail.com</span>
                         </div>
                         <div className="flex items-center gap-3">
                           <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                          <span>+1 (555) 123-4567</span>
+                          <span>+91 9784511533</span>
                         </div>
                       </CardContent>
                     </Card>

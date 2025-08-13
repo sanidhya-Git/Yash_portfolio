@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     console.log("Sending email:", {
       type,
       to,
-      subject: type === "booking_confirmation" ? "Booking Confirmation - Alex Johnson Design" : "Email from Portfolio",
+      subject: type === "booking_confirmation" ? "Booking Confirmation - Yash Bansal Design" : "Email from Portfolio",
       bookingData,
     })
 
@@ -38,11 +38,11 @@ export async function POST(request: NextRequest) {
         I'll review your request and get back to you within 24 hours to confirm the appointment details.
 
         Best regards,
-        Alex Johnson
+        Yash Bansal
         Creative Designer & Digital Artist
         
-        Email: alex@designstudio.com
-        Phone: +1 (555) 123-4567
+        Email: Yashbansal@gmail.com
+        Phone: +91 9784511533
       `
 
       // Here you would actually send the email using your preferred service
